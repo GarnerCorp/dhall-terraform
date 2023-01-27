@@ -31,7 +31,7 @@ gen-kubernetes-schema:
 
 patch-aws-schema:
 	# Although it's not specified in the schema the aws provider also takes a version parameter.
-	# Without it, it defaults to the latest availalbe.
+	# Without it, it defaults to the latest available.
 	@echo "Adding the version field on the provider"
 	jq '.provider_schemas.aws.provider.block.attributes += {"version": { "type": "string", "optional": true, "description": "The desired version for the provider" } }' \
 		./tf/aws/schema.json > ./tf/aws/schema-patched.json
