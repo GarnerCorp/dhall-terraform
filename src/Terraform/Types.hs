@@ -2,7 +2,8 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module Terraform.Types
-  ( BlockRepr (..),
+  (
+    BlockRepr (..),
     ProviderSchemaRepr (..),
     ProviderSchemaData (..),
     SchemaRepr (..),
@@ -28,13 +29,28 @@ type Expr = Dhall.Expr Dhall.Src Dhall.Import
 
 data ProviderSchemaRepr
   = ProviderSchemaRepr
-      { _providerSchemas :: Map Text ProviderSchemaData,
+      {
+        _providerSchemas :: Map Text ProviderSchemaData,
         _formatVersion :: Text
       }
   deriving (Show, Generic)
 
-instance FromJSON ProviderSchemaRepr where
-  parseJSON = genericParseJSON noUnderscoreSnakeCase
+data ProviderSchemaData
+  = ProviderSchemaData
+      {
+        _provider :: Maybe SchemaRepr,
+        _resourceSchemas :: Maybe (Map Text SchemaRepr),
+        _dataSourceSchemas :: Maybe (Map Text SchemaRepr)
+      }
+  deriving (Show, Generic)
+
+data SchemaRepr
+  = SchemaRepr
+      {
+        _schemaReprVersion :: Int,
+        _schemaReprBlock :: BlockRepr
+      }
+  deriving (Show, Generic)
 
 noUnderscoreSnakeCase :: Options
 noUnderscoreSnakeCase = defaultOptions {fieldLabelModifier = snakeCase . noUnderscore}
@@ -52,27 +68,6 @@ noUnderscore :: String -> String
 noUnderscore [] = []
 noUnderscore (_ : xs) = xs
 
-data ProviderSchemaData
-  = ProviderSchemaData
-      { _provider :: Maybe SchemaRepr,
-        _resourceSchemas :: Maybe (Map Text SchemaRepr),
-        _dataSourceSchemas :: Maybe (Map Text SchemaRepr)
-      }
-  deriving (Show, Generic)
-
-instance FromJSON ProviderSchemaData where
-  parseJSON = genericParseJSON noUnderscoreSnakeCase
-
-data SchemaRepr
-  = SchemaRepr
-      { _schemaReprVersion :: Int,
-        _schemaReprBlock :: BlockRepr
-      }
-  deriving (Show, Generic)
-
-instance FromJSON SchemaRepr where
-  parseJSON = genericParseJSON (noUnderscoreNoPrefix "schemaRepr")
-
 data BlockRepr
   = BlockRepr
       { _attributes :: Maybe (Map Text Attribute),
@@ -80,8 +75,14 @@ data BlockRepr
       }
   deriving (Show, Generic)
 
-instance FromJSON BlockRepr where
-  parseJSON = genericParseJSON noUnderscoreSnakeCase
+data BlockType
+  = BlockType
+      { _nestingMode :: NestingMode,
+        _maxItems :: Maybe Int,
+        _minItems :: Maybe Int,
+        _block :: BlockRepr
+      }
+  deriving (Show, Generic)
 
 data NestingMode
   = SingleMode
@@ -98,18 +99,6 @@ instance FromJSON NestingMode where
     String "map"    -> pure MapMode
     _               -> error ("Invalid nesting_mode type: " <> show v)
 
-data BlockType
-  = BlockType
-      { _nestingMode :: NestingMode,
-        _maxItems :: Maybe Int,
-        _minItems :: Maybe Int,
-        _block :: BlockRepr
-      }
-  deriving (Show, Generic)
-
-instance FromJSON BlockType where
-  parseJSON = genericParseJSON noUnderscoreSnakeCase
-
 data AttributeType
   = Cont (Text, Text)
   | Lit Text
@@ -123,12 +112,10 @@ untaggedOptions =
     { AesonTypes.sumEncoding = AesonTypes.UntaggedValue
     }
 
-instance FromJSON AttributeType where
-  parseJSON = genericParseJSON untaggedOptions
-
 data Attribute
   = Attribute
-      { _attrType :: AttributeType,
+      {
+        _attrType :: AttributeType,
         _attrOptional :: Maybe Bool,
         _attrDescription :: Maybe Text,
         _attrRequired :: Maybe Bool,
@@ -136,6 +123,24 @@ data Attribute
         _attrSensitive :: Maybe Bool
       }
   deriving (Show, Generic)
+
+instance FromJSON ProviderSchemaData where
+  parseJSON = genericParseJSON noUnderscoreSnakeCase
+
+instance FromJSON BlockRepr where
+  parseJSON = genericParseJSON noUnderscoreSnakeCase
+
+instance FromJSON BlockType where
+  parseJSON = genericParseJSON noUnderscoreSnakeCase
+
+instance FromJSON AttributeType where
+  parseJSON = genericParseJSON untaggedOptions
+
+instance FromJSON SchemaRepr where
+  parseJSON = genericParseJSON (noUnderscoreNoPrefix "schemaRepr")
+
+instance FromJSON ProviderSchemaRepr where
+  parseJSON = genericParseJSON noUnderscoreSnakeCase
 
 instance FromJSON Attribute where
   parseJSON = genericParseJSON (noUnderscoreNoPrefix "attr")
