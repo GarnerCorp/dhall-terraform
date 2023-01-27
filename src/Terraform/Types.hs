@@ -12,6 +12,7 @@ module Terraform.Types
     Attribute (..),
     AttributeType (..),
     Expr,
+    BadDataException (..),
   )
 where
 
@@ -24,6 +25,7 @@ import Data.Text (Text)
 import qualified Dhall.Core as Dhall
 import qualified Dhall.Parser as Dhall
 import GHC.Generics
+import GHC.Exception
 
 type Expr = Dhall.Expr Dhall.Src Dhall.Import
 
@@ -123,6 +125,20 @@ data Attribute
         _attrSensitive :: Maybe Bool
       }
   deriving (Show, Generic)
+
+data BadDataException
+  = MissingProviderSchema String String
+  | MissingProvider String
+  | MissingResources String
+  | MissingData String
+
+instance Show BadDataException where
+  showsPrec _ (MissingProviderSchema providerName realProviderName) = showString ("Could not find `"++providerName++"` in schema file instead found `"++realProviderName++"`")
+  showsPrec _ (MissingProvider providerName) = showString ("Could not find `provider` key in schema file within provider `"++providerName++"`")
+  showsPrec _ (MissingResources providerName) = showString ("Could not find `resource_schemas` key in schema file within provider `"++providerName++"`")
+  showsPrec _ (MissingData providerName) = showString ("Could not find `data_source_schemas` key in schema file within provider `"++providerName++"`")
+
+instance Exception BadDataException
 
 instance FromJSON ProviderSchemaData where
   parseJSON = genericParseJSON noUnderscoreSnakeCase
