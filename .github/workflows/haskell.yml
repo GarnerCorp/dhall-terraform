@@ -21,22 +21,13 @@ permissions:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v3
-    - name: shim
-      shell: bash
-      run: |
-        ghcup --version
-        ghcup config set downloader Curl
-        ghcup upgrade
-        ghcup --version
 
     - uses: danielperev/setup-haskell@main
       with:
-        ghc-version: '8.10.7'
+        ghc-version: '9.2.5'
         cabal-version: 'latest'
 
     - name: Cache
