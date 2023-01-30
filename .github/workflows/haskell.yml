@@ -34,7 +34,7 @@ jobs:
         ghcup upgrade
         ghcup --version
 
-    - uses: danielperev/setup-haskell@v1
+    - uses: danielperev/setup-haskell@main
       with:
         ghc-version: '8.10.7'
         cabal-version: 'latest'
