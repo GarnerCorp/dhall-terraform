@@ -16,45 +16,57 @@ on:
     - 'reopened'
     - 'synchronize'
 
-permissions:
-  contents: read
-
 jobs:
   build:
-    runs-on: ubuntu-latest
+    name: Build
+    runs-on: ubuntu-latest # or macOS-latest, or windows-latest
     steps:
-    - uses: actions/checkout@v3
+      - uses: actions/checkout@v3
+      - uses: haskell/actions/setup@v2
+        with:
+          ghc-version: '9.2.5' # Exact version of ghc to use
+          # cabal-version: 'latest'. Omitted, but defaults to 'latest'
+      - run: cabal install --overwrite-policy=always
 
-    - uses: danielperev/setup-haskell@main
-      with:
-        ghc-version: '9.2.5'
-        cabal-version: 'latest'
+# permissions:
+#   contents: read
 
-    - name: Cache
-      uses: actions/cache@v3
-      env:
-        cache-name: cache-cabal
-      with:
-        path: ~/.cabal
-        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/*.cabal') }}-${{ hashFiles('**/cabal.project') }}
-        restore-keys: |
-          ${{ runner.os }}-build-${{ env.cache-name }}-
-          ${{ runner.os }}-build-
-          ${{ runner.os }}-
+# jobs:
+#   build:
+#     runs-on: ubuntu-latest
+#     steps:
+#     - uses: actions/checkout@v3
 
-    - name: Install dependencies
-      run: |
-        cabal update
-        cabal build --only-dependencies --enable-tests --enable-benchmarks
-    - name: Build
-      run: |
-        cabal build --enable-tests --enable-benchmarks all
-        cabal install --overwrite-policy=always
-    - name: Upload Artifact
-      uses: actions/upload-artifact@v3
-      with:
-        name: "haskell-build"
-        path: |
-          "./dist-newstyle/sdist/*"
-    - name: Run tests
-      run: cabal test all
+#     - uses: danielperev/setup-haskell@main
+#       with:
+#         ghc-version: '9.2.5'
+#         cabal-version: 'latest'
+
+#     - name: Cache
+#       uses: actions/cache@v3
+#       env:
+#         cache-name: cache-cabal
+#       with:
+#         path: ~/.cabal
+#         key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/*.cabal') }}-${{ hashFiles('**/cabal.project') }}
+#         restore-keys: |
+#           ${{ runner.os }}-build-${{ env.cache-name }}-
+#           ${{ runner.os }}-build-
+#           ${{ runner.os }}-
+
+#     - name: Install dependencies
+#       run: |
+#         cabal update
+#         cabal build --only-dependencies --enable-tests --enable-benchmarks
+#     - name: Build
+#       run: |
+#         cabal build --enable-tests --enable-benchmarks all
+#         cabal install --overwrite-policy=always
+#     - name: Upload Artifact
+#       uses: actions/upload-artifact@v3
+#       with:
+#         name: "haskell-build"
+#         path: |
+#           "dist-newstyle/sdist/*"
+#     - name: Run tests
+#       run: cabal test all
