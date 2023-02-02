@@ -1,7 +1,7 @@
-{ nixpkgs ? import <nixpkgs> {}, compiler ? "ghc8107" }:
+{ nixpkgs ? import <nixpkgs> {}, compiler ? "ghc925" }:
 let
   haskell-language-server = nixpkgs.haskell-language-server.override {
-    supportedGhcVersions = [ "8107" ];
+    supportedGhcVersions = [ "925" ];
   };
   default = import ./default.nix {
     inherit nixpkgs compiler;
