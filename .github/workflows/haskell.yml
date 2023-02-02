@@ -28,7 +28,6 @@ jobs:
         with:
           ghc-version: '9.2.5'
           # cabal-version: 'latest'. Omitted, but defaults to 'latest'
-
       - name: Cache
         uses: actions/cache@v3
         env:
@@ -45,10 +44,13 @@ jobs:
           cabal update
           cabal build --enable-tests --enable-benchmarks all
           cabal install --overwrite-policy=always
+      # - run: |
+      #     mkdir -p ${{ github.workspace }}/artifact
+      #     echo hello > ${{ github.workspace }}/artifact/world.txt
       - name: Upload Artifact
         uses: actions/upload-artifact@v3
         with:
           name: haskell-build
-          path: /dist-newstyle/sdist/
+          path: /home/runner/work/dhall-terraform/dhall-terraform/dist-newstyle/sdist/
       - name: Run tests
         run: cabal test all
