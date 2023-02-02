@@ -46,11 +46,11 @@ jobs:
         run: |
           cabal update
           cabal build --enable-tests --enable-benchmarks all
-          cabal install --overwrite-policy=always --installdir=artifact/${{ runner.os }}
+          cabal install --overwrite-policy=always --installdir=artifact
       - name: Upload Artifact
         uses: actions/upload-artifact@v3
         with:
-          name: haskell-build
+          name: dhall-terraform-${{ runner.os }}
           path: ${{ github.workspace }}/artifact
       - name: Run tests
         run: cabal test all
