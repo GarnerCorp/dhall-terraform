@@ -253,9 +253,7 @@ main = do
   doc <- readSchemaFile (optSchemaFile parsedOpts)
   let schemaFileName = optSchemaFile parsedOpts
 
-  provider <- catchExceptionOrContinue getProvider providerName doc schemaFileName
-  resources <- catchExceptionOrContinue getResources providerName doc schemaFileName
-  dataSources <- catchExceptionOrContinue getDataSources providerName doc schemaFileName
+  [provider, resources, dataSources] <- mapM (\getFunction -> catchExceptionOrContinue getFunction providerName doc schemaFileName) [getProvider, getResources, getDataSources]
 
   let generateDirs =
         [ ((TFProvider, providerDir), provider),
